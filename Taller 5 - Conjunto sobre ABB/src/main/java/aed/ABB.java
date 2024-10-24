@@ -45,39 +45,49 @@ public class ABB<T extends Comparable<T>> implements Conjunto<T> {
     }
 
     public int cardinal() {
-        return _cardinal;
+        if (_raiz == null) {
+            return 0;
+        }
+        return 1 + _raiz._izq.cardinal() + _raiz._der.cardinal();
     }
 
     public T minimo() {
-        return _mínimo;
+        if (_raiz == null) {
+            return null;
+        }
+        if (_raiz._izq._raiz == null) {
+            return _raiz._valor;
+        }
+        return _raiz._izq.minimo();
     }
 
     public T maximo() {
-        return _máximo;
+        if (_raiz == null) {
+            return null;
+        }
+        if (_raiz._der._raiz == null) {
+            return _raiz._valor;
+        }
+        return _raiz._der.minimo();
     }
 
     public void insertar(T elem) {
-        if (!pertenece(elem)) {
-            Nodo nuevo = new Nodo(elem);
-            if (_raiz == null) {
-                _raiz = nuevo;
-            } else {
-                if (elem.compareTo(_raiz._valor) > 0) {
-                    this._raiz._der.insertar(elem);
-                } else {
-                    this._raiz._izq.insertar(elem);
-                }
-            }
-            _cardinal++;
-            if (_máximo == null || elem.compareTo(_máximo) > 0) {
-                _máximo = elem;
-            }
-            ;
-            if (_mínimo == null || elem.compareTo(_mínimo) < 0) {
-                _mínimo = elem;
-            }
-            ;
+
+        Nodo nuevo = new Nodo(elem);
+        if (_raiz == null) {
+            _raiz = nuevo;
+            return;
         }
+        if (_raiz._valor == elem) {
+            return;
+        }
+
+        if (elem.compareTo(_raiz._valor) > 0) {
+            this._raiz._der.insertar(elem);
+        } else {
+            this._raiz._izq.insertar(elem);
+        }
+
     }
 
     public boolean pertenece(T elem) {
@@ -92,8 +102,8 @@ public class ABB<T extends Comparable<T>> implements Conjunto<T> {
         }
     }
 
-    public void eliminar(T elem) {
-        if (pertenece(elem)) {
+    public void eliminar(T elem) { ////// if (!p){... return}
+        if (pertenece(elem)) { ///// <vale p para todo código que siga>
             if (_raiz._valor == elem) { // cuando lo encuentro (caso base)
                 if (_raiz._padre != null) {
                     if (_raiz._der == _raiz._izq) {
@@ -139,7 +149,6 @@ public class ABB<T extends Comparable<T>> implements Conjunto<T> {
                 }
             }
         }
-        ;
     }
 
     private Nodo sucesor(Nodo nodo) {
