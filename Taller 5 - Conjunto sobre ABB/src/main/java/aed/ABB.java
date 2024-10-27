@@ -5,173 +5,223 @@ import java.util.*;
 // Todos los tipos de datos "Comparables" tienen el método compareTo()
 // elem1.compareTo(elem2) devuelve un entero. Si es mayor a 0, entonces elem1 > elem2
 public class ABB<T extends Comparable<T>> implements Conjunto<T> {
-
-    private Nodo _raiz;
-
-    private int _cardinal;
-
-    private T _mínimo;
-
-    private T _máximo;
+    Nodo raiz;
+    T maximo;
+    T minimo;
+    int cardinal;
 
     private class Nodo {
-        T _valor;
+        T valor;
+        Nodo izq;
+        Nodo der;
 
-        Nodo _padre;
-
-        ABB<T> _izq;
-
-        ABB<T> _der;
-
-        Nodo(T v) {
-            _valor = v; // creo el nodo y sus dos hijos son null, tmb su padre
-
-            _padre = null;
-
-            _izq = new ABB<T>();
-
-            _der = new ABB<T>();
-        };
+        Nodo(T elem) {
+            valor = elem;
+        }
     }
 
     public ABB() {
-        _cardinal = 0;
-
-        _raiz = null;
-
-        _mínimo = null;
-
-        _máximo = null;
+        raiz = null;
+        cardinal = 0;
     }
 
     public int cardinal() {
-        if (_raiz == null) {
-            return 0;
-        }
-        return 1 + _raiz._izq.cardinal() + _raiz._der.cardinal();
+        return cardinal;
     }
 
     public T minimo() {
-        if (_raiz == null) {
-            return null;
-        }
-        if (_raiz._izq._raiz == null) {
-            return _raiz._valor;
-        }
-        return _raiz._izq.minimo();
+        return minimo;
     }
 
     public T maximo() {
-        if (_raiz == null) {
-            return null;
-        }
-        if (_raiz._der._raiz == null) {
-            return _raiz._valor;
-        }
-        return _raiz._der.minimo();
+        return maximo;
     }
 
     public void insertar(T elem) {
-
-        Nodo nuevo = new Nodo(elem);
-        if (_raiz == null) {
-            _raiz = nuevo;
-            return;
-        }
-        if (_raiz._valor == elem) {
-            return;
-        }
-
-        if (elem.compareTo(_raiz._valor) > 0) {
-            this._raiz._der.insertar(elem);
+        if (raiz != null) {
+            raiz = insertarRecursivo(raiz, elem);
         } else {
-            this._raiz._izq.insertar(elem);
+            raiz = new Nodo(elem);
         }
+        if (maximo == null || elem.compareTo(maximo) > 0) {
+            maximo = elem;
+        }
+        if (minimo == null || elem.compareTo(minimo) < 0) {
+            minimo = elem;
+        }
+        cardinal++;
+        return;
+    }
+
+    private Nodo insertarRecursivo(Nodo nodo, T elem) { // al pasar un parametro se hace por copia
+        if (nodo.valor.compareTo(elem) == 0) {
+            cardinal--;
+            return nodo;
+        }
+        if (elem.compareTo(nodo.valor) < 0) {
+            if (nodo.izq == null) {
+                nodo.izq = new Nodo(elem);
+                return nodo;
+            }
+            nodo.izq = insertarRecursivo(nodo.izq, elem);
+            return nodo;
+        }
+        if (nodo.der == null) {
+            nodo.der = new Nodo(elem);
+            return nodo;
+        }
+        nodo.der = insertarRecursivo(nodo.der, elem);
+        return nodo;
 
     }
 
     public boolean pertenece(T elem) {
-        return _raiz != null && (_raiz._valor == elem || pasoRecursivo(elem));
+        return perteneceRecursivo(raiz, elem);
     }
 
-    private boolean pasoRecursivo(T elem) {
-        if (elem.compareTo(_raiz._valor) > 0) {
-            return _raiz._der.pertenece(elem);
+    private boolean perteneceRecursivo(Nodo nodo, T elem) {
+        if (nodo == null) {
+            return false;
+        }
+        if (nodo.valor.compareTo(elem) == 0) {
+            return true;
+        }
+        if (elem.compareTo(nodo.valor) > 0) {
+            return perteneceRecursivo(nodo.der, elem);
         } else {
-            return _raiz._izq.pertenece(elem);
+            return perteneceRecursivo(nodo.izq, elem);
         }
     }
 
-    public void eliminar(T elem) { ////// if (!p){... return}
-        if (pertenece(elem)) { ///// <vale p para todo código que siga>
-            if (_raiz._valor == elem) { // cuando lo encuentro (caso base)
-                if (_raiz._padre != null) {
-                    if (_raiz._der == _raiz._izq) {
-                        if (_raiz._valor.compareTo(_raiz._padre._valor) > 0) {
-                            _raiz._padre._der = null;
-                        } else {
-                            _raiz._padre._izq = null;
-                        }
-                    }
-                    if (_raiz._der != null && _raiz._izq == null) {
-                        _raiz._der._raiz._padre = _raiz._padre;
-                        if (_raiz == _raiz._padre._der._raiz) {
-                            _raiz._padre._der._raiz = _raiz._der._raiz;
-                        } else {
-                            _raiz._padre._izq._raiz = _raiz._der._raiz;
-                        }
-                    }
-                    if (_raiz._izq != null && _raiz._der == null) {
-                        _raiz._izq._raiz._padre = _raiz._padre;
-                        if (_raiz == _raiz._padre._der._raiz) {
-                            _raiz._padre._der._raiz = _raiz._izq._raiz;
-                        } else {
-                            _raiz._padre._izq._raiz = _raiz._izq._raiz;
-                        }
-                    }
-                    if (_raiz._izq != null && _raiz._der != null) {
-                        if (_raiz == _raiz._padre._der._raiz) {
-                            _raiz._padre._der._raiz = sucesor(_raiz);
-                        } else {
-                            _raiz._padre._izq._raiz = sucesor(_raiz);
-                        }
-                    }
-                } else {
-                    if (_raiz._der == _raiz._izq) {
+    private Nodo maximoRecursivo(Nodo nodo) {
+        if (nodo == null) {
+            return null;
+        }
+        if (nodo.der == null) {
+            return nodo;
+        }
+        return maximoRecursivo(nodo.der);
+    }
 
-                    }
-                }
-            } else { // paso recursivo
-                if (elem.compareTo(_raiz._valor) > 0) {
-                    _raiz._der.eliminar(elem);
-                } else {
-                    _raiz._izq.eliminar(elem);
-                }
+    private Nodo minimoRecursivo(Nodo nodo) {
+        if (nodo == null) {
+            return null;
+        }
+        if (nodo.izq == null) {
+            return nodo;
+        }
+        return minimoRecursivo(nodo.izq);
+    }
+
+    public void eliminar(T elem) {
+        raiz = eliminarRecursivo(raiz, elem);
+        if (raiz != null) {
+
+            if (maximo == elem) {
+                maximo = maximoRecursivo(raiz).valor;
             }
+            if (minimo == elem) {
+                minimo = minimoRecursivo(raiz).valor;
+            }
+        } else {
+            maximo = null;
+            minimo = null;
         }
+        cardinal--;
+        return;
     }
 
-    private Nodo sucesor(Nodo nodo) {
-        Nodo nodoActual = nodo._der._raiz;
-        while (nodoActual._izq._raiz != null) {
-            nodoActual = nodoActual._izq._raiz;
+    private Nodo eliminarRecursivo(Nodo nodo, T elem) {
+        if (nodo == null) {
+            cardinal++;
+            return null;
+        }
+
+        if (elem.compareTo(nodo.valor) < 0) {
+            nodo.izq = eliminarRecursivo(nodo.izq, elem);
+        } else if (elem.compareTo(nodo.valor) > 0) {
+            nodo.der = eliminarRecursivo(nodo.der, elem);
+        } else {
+            // un solo hijo o sin hijos
+            if (nodo.der == null) {
+                return nodo.izq; // devuelvo el que queda (si no queda ninguno devuelvo null)
+            } else if (nodo.izq == null) {
+                return nodo.der;
+            }
+            // dos hijos
+            Nodo minDerecha = minimoDerecha(nodo);
+            raiz = eliminarRecursivo(raiz, minDerecha.valor);
+            nodo.valor = minDerecha.valor;
+            return nodo;
+        }
+        return nodo;
+    }
+
+    private Nodo minimoDerecha(Nodo nodo) {
+        Nodo nodoActual = nodo.der;
+        while (nodoActual.izq != null) {
+            nodoActual = nodoActual.izq;
         }
         return nodoActual;
     }
 
     public String toString() {
-        throw new UnsupportedOperationException("No implementada aun");
+        if (raiz == null) {
+            return "{}";
+        }
+        ABB_Iterador it = new ABB_Iterador();
+        String res = "{" + it.siguiente();
+        while (it.haySiguiente()) {
+            res += "," + it.siguiente();
+        }
+        res += "}";
+        return res;
     }
 
     private class ABB_Iterador implements Iterador<T> {
-        private Nodo _actual;
+        private Nodo siguiente;
+
+        ABB_Iterador() {
+            siguiente = minimoRecursivo(raiz);
+        }
 
         public boolean haySiguiente() {
-            throw new UnsupportedOperationException("No implementada aun");
+            return siguiente != null;
         }
 
         public T siguiente() {
-            throw new UnsupportedOperationException("No implementada aun");
+            T res = siguiente.valor;
+            if (siguiente.valor.compareTo(maximo) != 0) {
+                siguiente = sucesor(siguiente);
+            } else {
+                siguiente = null;
+            }
+            return res;
+        }
+
+        private Nodo sucesor(Nodo nodo) {
+            if (nodo.der != null) {
+                return minimoDerecha(nodo);
+            }
+            return sucesorArriba(nodo, raiz);
+        }
+
+        private Nodo sucesorArriba(Nodo nodo, Nodo inicio) {
+            if (nodo.valor.compareTo(inicio.valor) > 0) {
+                return sucesorArriba(nodo, inicio.der);
+            }
+            // vale nodo.valor menor a inicio.valor
+            if (inicio.izq.valor.compareTo(nodo.valor) <= 0) { // si me voy para la izquierda me pasé
+                if (inicio.izq.der != null) { // me puedo ir a la der de la izq
+                    if (inicio.izq.der.valor.compareTo(nodo.valor) > 0) { // hay un grande mas chico
+                        return sucesorArriba(nodo, inicio.izq);
+                    }
+                }
+                return inicio;
+            } else { // puedo irme a la izquierda
+                return sucesorArriba(nodo, inicio.izq);
+            }
+
         }
     }
 

@@ -60,7 +60,7 @@ class ABBTests {
          * ___2___
          * _1 _ 5_
          * . . 3 7
-         * 
+         *
          */
 
         conjunto.insertar(2);
@@ -176,7 +176,7 @@ class ABBTests {
          * ___6___
          * _____8
          * ____7 9
-         * 
+         *
          */
 
         conjunto.insertar(6);
@@ -204,7 +204,7 @@ class ABBTests {
          * ___6___
          * _4
          * 2 5
-         * 
+         *
          */
 
         conjunto.insertar(6);
